@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2024.2.2a1),
-    on Fri Nov 28 20:28:21 2025
+    on Tue Dec 16 10:32:52 2025
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -879,7 +879,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     fixation = visual.TextStim(win=win, name='fixation',
         text='+',
         font='Arial',
-        units='norm', pos=(0, 0), draggable=False, height=0.2, wrapWidth=1.8, ori=0.0, 
+        units='norm', pos=(0, 0), draggable=False, height=0.25, wrapWidth=1.8, ori=0.0, 
         color='white', colorSpace='rgb', opacity=None, 
         languageStyle='LTR',
         depth=0.0);
@@ -929,7 +929,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     fixation = visual.TextStim(win=win, name='fixation',
         text='+',
         font='Arial',
-        units='norm', pos=(0, 0), draggable=False, height=0.2, wrapWidth=1.8, ori=0.0, 
+        units='norm', pos=(0, 0), draggable=False, height=0.25, wrapWidth=1.8, ori=0.0, 
         color='white', colorSpace='rgb', opacity=None, 
         languageStyle='LTR',
         depth=0.0);
@@ -948,7 +948,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     fixation = visual.TextStim(win=win, name='fixation',
         text='+',
         font='Arial',
-        units='norm', pos=(0, 0), draggable=False, height=0.2, wrapWidth=1.8, ori=0.0, 
+        units='norm', pos=(0, 0), draggable=False, height=0.25, wrapWidth=1.8, ori=0.0, 
         color='white', colorSpace='rgb', opacity=None, 
         languageStyle='LTR',
         depth=0.0);
@@ -989,7 +989,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     fixation = visual.TextStim(win=win, name='fixation',
         text='+',
         font='Arial',
-        units='norm', pos=(0, 0), draggable=False, height=0.2, wrapWidth=1.8, ori=0.0, 
+        units='norm', pos=(0, 0), draggable=False, height=0.25, wrapWidth=1.8, ori=0.0, 
         color='white', colorSpace='rgb', opacity=None, 
         languageStyle='LTR',
         depth=0.0);
@@ -1502,7 +1502,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         if isinstance(nbackBlocks, data.TrialHandler2) and thisNbackBlock.thisN != nbackBlocks.thisTrial.thisN:
             continueRoutine = False
         ITI.forceEnded = routineForceEnded = not continueRoutine
-        while continueRoutine and routineTimer.getTime() < 1.0:
+        while continueRoutine and routineTimer.getTime() < 2.0:
             # get current time
             t = routineTimer.getTime()
             tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -1531,7 +1531,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # if fixation is stopping this frame...
             if fixation.status == STARTED:
                 # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > fixation.tStartRefresh + 1.0-frameTolerance:
+                if tThisFlipGlobal > fixation.tStartRefresh + 2.0-frameTolerance:
                     # keep track of stop time/frame for later
                     fixation.tStop = t  # not accounting for scr refresh
                     fixation.tStopRefresh = tThisFlipGlobal  # on global time
@@ -1589,7 +1589,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         elif ITI.forceEnded:
             routineTimer.reset()
         else:
-            routineTimer.addTime(-1.000000)
+            routineTimer.addTime(-2.000000)
         
         # set up handler to look after randomisation of conditions etc
         practice = data.TrialHandler2(
@@ -2044,7 +2044,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             if isinstance(practice, data.TrialHandler2) and thisPractice.thisN != practice.thisTrial.thisN:
                 continueRoutine = False
             feedback.forceEnded = routineForceEnded = not continueRoutine
-            while continueRoutine and routineTimer.getTime() < 3.0:
+            while continueRoutine and routineTimer.getTime() < 2.0:
                 # get current time
                 t = routineTimer.getTime()
                 tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -2073,7 +2073,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 # if fbText is stopping this frame...
                 if fbText.status == STARTED:
                     # is it time to stop? (based on global clock, using actual start)
-                    if tThisFlipGlobal > fbText.tStartRefresh + 3-frameTolerance:
+                    if tThisFlipGlobal > fbText.tStartRefresh + 2-frameTolerance:
                         # keep track of stop time/frame for later
                         fbText.tStop = t  # not accounting for scr refresh
                         fbText.tStopRefresh = tThisFlipGlobal  # on global time
@@ -2131,7 +2131,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             elif feedback.forceEnded:
                 routineTimer.reset()
             else:
-                routineTimer.addTime(-3.000000)
+                routineTimer.addTime(-2.000000)
             
             # --- Prepare to start Routine "ITI" ---
             # create an object to store info about Routine ITI
@@ -2169,7 +2169,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             if isinstance(practice, data.TrialHandler2) and thisPractice.thisN != practice.thisTrial.thisN:
                 continueRoutine = False
             ITI.forceEnded = routineForceEnded = not continueRoutine
-            while continueRoutine and routineTimer.getTime() < 1.0:
+            while continueRoutine and routineTimer.getTime() < 2.0:
                 # get current time
                 t = routineTimer.getTime()
                 tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -2198,7 +2198,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 # if fixation is stopping this frame...
                 if fixation.status == STARTED:
                     # is it time to stop? (based on global clock, using actual start)
-                    if tThisFlipGlobal > fixation.tStartRefresh + 1.0-frameTolerance:
+                    if tThisFlipGlobal > fixation.tStartRefresh + 2.0-frameTolerance:
                         # keep track of stop time/frame for later
                         fixation.tStop = t  # not accounting for scr refresh
                         fixation.tStopRefresh = tThisFlipGlobal  # on global time
@@ -2256,7 +2256,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             elif ITI.forceEnded:
                 routineTimer.reset()
             else:
-                routineTimer.addTime(-1.000000)
+                routineTimer.addTime(-2.000000)
             thisExp.nextEntry()
             
         # completed len(practiceBlockTrials) repeats of 'practice'
@@ -2475,7 +2475,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         if isinstance(nbackBlocks, data.TrialHandler2) and thisNbackBlock.thisN != nbackBlocks.thisTrial.thisN:
             continueRoutine = False
         ITI.forceEnded = routineForceEnded = not continueRoutine
-        while continueRoutine and routineTimer.getTime() < 1.0:
+        while continueRoutine and routineTimer.getTime() < 2.0:
             # get current time
             t = routineTimer.getTime()
             tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -2504,7 +2504,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # if fixation is stopping this frame...
             if fixation.status == STARTED:
                 # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > fixation.tStartRefresh + 1.0-frameTolerance:
+                if tThisFlipGlobal > fixation.tStartRefresh + 2.0-frameTolerance:
                     # keep track of stop time/frame for later
                     fixation.tStop = t  # not accounting for scr refresh
                     fixation.tStopRefresh = tThisFlipGlobal  # on global time
@@ -2562,7 +2562,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         elif ITI.forceEnded:
             routineTimer.reset()
         else:
-            routineTimer.addTime(-1.000000)
+            routineTimer.addTime(-2.000000)
         
         # set up handler to look after randomisation of conditions etc
         trials = data.TrialHandler2(
@@ -2996,7 +2996,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             if isinstance(trials, data.TrialHandler2) and thisTrial.thisN != trials.thisTrial.thisN:
                 continueRoutine = False
             ITI.forceEnded = routineForceEnded = not continueRoutine
-            while continueRoutine and routineTimer.getTime() < 1.0:
+            while continueRoutine and routineTimer.getTime() < 2.0:
                 # get current time
                 t = routineTimer.getTime()
                 tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -3025,7 +3025,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 # if fixation is stopping this frame...
                 if fixation.status == STARTED:
                     # is it time to stop? (based on global clock, using actual start)
-                    if tThisFlipGlobal > fixation.tStartRefresh + 1.0-frameTolerance:
+                    if tThisFlipGlobal > fixation.tStartRefresh + 2.0-frameTolerance:
                         # keep track of stop time/frame for later
                         fixation.tStop = t  # not accounting for scr refresh
                         fixation.tStopRefresh = tThisFlipGlobal  # on global time
@@ -3083,7 +3083,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             elif ITI.forceEnded:
                 routineTimer.reset()
             else:
-                routineTimer.addTime(-1.000000)
+                routineTimer.addTime(-2.000000)
             thisExp.nextEntry()
             
         # completed len(blockTrials) repeats of 'trials'

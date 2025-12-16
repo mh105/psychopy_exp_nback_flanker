@@ -1,7 +1,8 @@
 # N-back flanker task (no pupil)
-Last edit: 11/28/2025
+Last edit: 12/16/2025
 
 ## Edit history
+- 12/16/2025 by Alex He - increased ITI fixation cross size and duration from 1s to 2s
 - 11/28/2025 by Alex He - created finalized first draft version by Harjinder Singh
 
 ## Description
