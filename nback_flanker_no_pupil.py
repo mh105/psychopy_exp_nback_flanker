@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2024.2.2a1),
-    on Fri Feb 13 20:15:59 2026
+    on Wed Feb 25 10:47:04 2026
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -1956,7 +1956,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 
                 # 2) Otherwise, if they responded after cue, score it
                 elif main_key is not None:
-                    fb_msg = "Correct!" if main_key == row['correctKey'] else "Wrong"
+                    fb_msg = "Correct!" if main_key == row['correctKey'] else "Incorrect"
                 
                 # 3) No response at all
                 else:

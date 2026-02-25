@@ -1,7 +1,8 @@
 # N-back flanker task (no pupil)
-Last edit: 02/13/2026
+Last edit: 02/25/2026
 
 ## Edit history
+- 02/25/2026 by Alex He - increased main block trials from 120 to 160, and updated feedback text for incorrect
 - 02/13/2026 by Alex He - reduced spacing between central and flanking letters and added option to repeat practice
 - 12/16/2025 by Alex He - increased ITI fixation cross size and duration from 1s to 2s
 - 11/28/2025 by Alex He - created finalized first draft version by Harjinder Singh
