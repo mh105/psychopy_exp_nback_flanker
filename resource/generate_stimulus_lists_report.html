@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>N-back Flanker Stimulus Lists</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5d6b78;
+      --paper: #f4f6f2;
+      --card: #ffffff;
+      --line: #d8dfd8;
+      --navy: #17324d;
+      --teal: #0b7269;
+      --teal-soft: #e4f3ef;
+      --amber: #aa6417;
+      --amber-soft: #fff2dd;
+      --shadow: 0 12px 34px rgba(23, 50, 77, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--teal); }
+    code, .mono {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    .page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .hero {
+      color: white;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(40, 173, 153, 0.28), transparent 34%),
+        linear-gradient(135deg, #122a40, #173f58 62%, #0b625e);
+      padding: 70px 0 54px;
+    }
+    .hero h1 {
+      max-width: 850px;
+      margin: 8px 0 18px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.4rem, 5vw, 4.5rem);
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+    }
+    .hero .lede { max-width: 780px; font-size: 1.12rem; color: #dfecea; }
+    .eyebrow {
+      margin: 0;
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    .hero .eyebrow { color: #8fe0d2; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .status-row span {
+      padding: 7px 11px;
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.09);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(255,255,255,0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .toc .page { display: flex; gap: 22px; overflow-x: auto; padding: 12px 0; }
+    .toc a { color: var(--navy); font-size: 0.86rem; font-weight: 750; text-decoration: none; white-space: nowrap; }
+    main { padding: 54px 0 80px; }
+    .section-heading { max-width: 800px; margin-bottom: 24px; }
+    h2 {
+      margin: 5px 0 10px;
+      color: var(--navy);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.8rem, 3vw, 2.7rem);
+      line-height: 1.15;
+    }
+    h3 { margin: 2px 0 0; color: var(--navy); font-size: 1.45rem; }
+    h4 { margin: 0 0 7px; color: var(--navy); font-size: 1rem; }
+    p { margin: 0 0 12px; }
+    .concept-grid, .definition-grid, .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .concept, .definition, .metric, .list-card, .panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .concept, .definition, .panel { padding: 24px; }
+    .concept .formula {
+      margin: 16px 0;
+      padding: 13px 15px;
+      border-left: 4px solid var(--teal);
+      background: var(--teal-soft);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-weight: 700;
+    }
+    .callout {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border: 1px solid #efcf9e;
+      border-radius: 12px;
+      background: var(--amber-soft);
+    }
+    .task-section, .report-section { margin-top: 64px; }
+    .list-card { margin-top: 24px; padding: 26px; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .pass {
+      padding: 7px 11px;
+      border-radius: 999px;
+      color: #07564f;
+      background: var(--teal-soft);
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1px;
+      margin: 22px 0 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--line);
+    }
+    .summary-grid div { padding: 13px; background: #fbfcfa; }
+    .summary-grid span { display: block; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary-grid strong { display: block; margin-top: 3px; font-size: 0.94rem; }
+    .file-link { margin-bottom: 20px; font-size: 0.86rem; }
+    .metric { padding: 19px; box-shadow: none; }
+    .metric > p { color: var(--muted); font-size: 0.86rem; }
+    .span-2 { grid-column: 1 / -1; }
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+    th { color: var(--navy); background: #f0f4f2; font-size: 0.76rem; letter-spacing: 0.03em; }
+    th:first-child, td:first-child { text-align: left; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:nth-child(even) { background: #fafbf9; }
+    .rule-list { counter-reset: rules; display: grid; gap: 12px; padding: 0; list-style: none; }
+    .rule-list li { position: relative; padding: 16px 18px 16px 54px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    .rule-list li::before {
+      counter-increment: rules;
+      content: counter(rules);
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--navy);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .rule-list strong { color: var(--navy); }
+    footer { padding: 30px 0 45px; color: var(--muted); border-top: 1px solid var(--line); font-size: 0.85rem; }
+    @media (max-width: 900px) {
+      .summary-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .page { width: min(100% - 24px, 1180px); }
+      .hero { padding-top: 48px; }
+      .concept-grid, .definition-grid, .metric-grid { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .list-card { padding: 17px; }
+    }
+    @media print {
+      .toc { position: static; }
+      .list-card, .concept, .definition, .metric, .panel { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="page">
+      <p class="eyebrow">Final stimulus framework</p>
+      <h1>N-back Flanker Stimulus Lists</h1>
+      <p class="lede">A single, task-specific account of perceptual and behavioral congruency, the constraints used to generate two fixed list versions, and the observed properties of every main list.</p>
+      <div class="status-row">
+        <span>8 CSVs validated</span>
+        <span>2 fixed versions</span>
+        <span>160 scored main trials per task</span>
+        <span>Deterministic output</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Report sections">
+    <div class="page">
+      <a href="#constructs">Constructs</a>
+      <a href="#conditions">Conditions</a>
+      <a href="#constraints">Constraints</a>
+      <a href="#validation">Validation</a>
+      <a href="#zero-back-properties">0-back lists</a>
+      <a href="#one-back-properties">1-back lists</a>
+      <a href="#practice">Practice</a>
+      <a href="#versions">Versions</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <section id="constructs">
+      <div class="section-heading">
+        <p class="eyebrow">Fundamental definitions — not list constraints</p>
+        <h2>Two meanings of congruency</h2>
+        <p>Let <code>C<sub>t</sub></code> and <code>F<sub>t</sub></code> denote the current center and flanker letters. Previous-trial letters are <code>C<sub>t−1</sub></code> and <code>F<sub>t−1</sub></code>.</p>
+      </div>
+      <div class="concept-grid">
+        <article class="concept">
+          <p class="eyebrow">Perceptual congruency</p>
+          <h3>Do the current letters match?</h3>
+          <div class="formula">P = (F<sub>t</sub> = C<sub>t</sub>)</div>
+          <p>This definition is identical in 0-back and 1-back. It concerns simultaneous visual identity only.</p>
+        </article>
+        <article class="concept">
+          <p class="eyebrow">Behavioral congruency</p>
+          <h3>Does irrelevant evidence support the task response?</h3>
+          <p>The relevant behavioral comparison changes with the task. Behavioral congruency therefore has a task-specific derivation even though its final CSV label remains <code>yes</code> or <code>no</code>.</p>
+        </article>
+      </div>
+      <div class="definition-grid" style="margin-top:18px">
+        <article class="definition">
+          <p class="eyebrow">0-back behavioral rule</p>
+          <h3>H versus non-H response mapping</h3>
+          <p>Define <code>R<sub>0</sub>(X) = (X = H)</code>. Behavioral congruency is:</p>
+          <p class="formula"><code>R<sub>0</sub>(C<sub>t</sub>) = R<sub>0</sub>(F<sub>t</sub>)</code></p>
+          <p>The center and flanker are behaviorally congruent when both map to YES or both map to NO under the fixed-target rule.</p>
+        </article>
+        <article class="definition">
+          <p class="eyebrow">1-back behavioral rule</p>
+          <h3>Match-status compatibility</h3>
+          <p>Define the task match <code>T = (C<sub>t</sub> = C<sub>t−1</sub>)</code>. Behavioral congruency is:</p>
+          <p class="formula"><code>T = P</code></p>
+          <p><code>F<sub>t</sub> = F<sub>t−1</sub></code> can strengthen match evidence in selected conditions, but it is a construction rule rather than the definition of behavioral congruency.</p>
+        </article>
+      </div>
+      <div class="callout"><strong>Important:</strong> behavioral congruency is derived from task-relevant response compatibility. It is not an independently crossed third factor, and no difficulty category is assigned.</div>
+    </section>
+
+    <section class="report-section" id="conditions">
+      <div class="section-heading">
+        <p class="eyebrow">Operational definitions</p>
+        <h2>The four selected conditions</h2>
+        <p>A denotes a correct NO response; B denotes a correct YES response. Suffix 1 is behaviorally congruent and suffix 2 is behaviorally incongruent.</p>
+      </div>
+      <article class="panel">
+        <h3>0-back: target letter H</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Type</th><th>Correct</th><th>Center and flanker rules</th><th>Perceptual</th><th>Behavioral</th></tr></thead>
+          <tbody>
+            <tr><td>A1</td><td>no</td><td><code>C<sub>t</sub> ≠ H; F<sub>t</sub> = C<sub>t</sub></code></td><td>yes</td><td>yes</td></tr>
+            <tr><td>A2</td><td>no</td><td><code>C<sub>t</sub> ≠ H; F<sub>t</sub> = H</code></td><td>no</td><td>no</td></tr>
+            <tr><td>B1</td><td>yes</td><td><code>C<sub>t</sub> = F<sub>t</sub> = H</code></td><td>yes</td><td>yes</td></tr>
+            <tr><td>B2</td><td>yes</td><td><code>C<sub>t</sub> = H; F<sub>t</sub> ≠ H</code></td><td>no</td><td>no</td></tr>
+          </tbody>
+        </table></div>
+        <p class="callout">The perceptually incongruent but behaviorally congruent non-H/non-H case is deliberately omitted. The selected 0-back conditions occupy only the perceptual/behavioral diagonal.</p>
+      </article>
+      <article class="panel" style="margin-top:18px">
+        <h3>1-back: current versus previous center</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Type</th><th>Correct</th><th>Center and flanker rules</th><th>Perceptual</th><th>Behavioral</th></tr></thead>
+          <tbody>
+            <tr><td>A1</td><td>no</td><td><code>C<sub>t</sub> ≠ C<sub>t−1</sub>; F<sub>t</sub> ∉ {C<sub>t</sub>, C<sub>t−1</sub>, F<sub>t−1</sub>}</code></td><td>no</td><td>yes</td></tr>
+            <tr><td>A2</td><td>no</td><td><code>C<sub>t</sub> ≠ C<sub>t−1</sub>; F<sub>t</sub> = C<sub>t</sub> = F<sub>t−1</sub></code></td><td>yes</td><td>no</td></tr>
+            <tr><td>B1</td><td>yes</td><td><code>C<sub>t</sub> = C<sub>t−1</sub>; F<sub>t</sub> = C<sub>t</sub></code></td><td>yes</td><td>yes</td></tr>
+            <tr><td>B2</td><td>yes</td><td><code>C<sub>t</sub> = C<sub>t−1</sub>; F<sub>t</sub> ∉ {C<sub>t</sub>, F<sub>t−1</sub>}</code></td><td>no</td><td>no</td></tr>
+          </tbody>
+        </table></div>
+      </article>
+    </section>
+
+    <section class="report-section" id="constraints">
+      <div class="section-heading">
+        <p class="eyebrow">Generation requirements</p>
+        <h2>Actual list constraints</h2>
+        <p>These requirements govern the composition and ordering of generated rows; unlike the preceding construct definitions, they can pass or fail.</p>
+      </div>
+      <ol class="rule-list">
+        <li><strong>Output contract.</strong> CSV columns are exactly <code>TrialNumber, CenterLetter, FlankerLetter, PerceptualCongruency, BehavioralCongruency, CorrectResponse, ConditionType</code>. Practice/main contain 20/160 scored trials. Each 1-back file adds response-free trial 0.</li>
+        <li><strong>Condition composition.</strong> Practice contains 5 and main contains 40 of each A1/A2/B1/B2. Consequently, each binary field is exactly 50% yes and 50% no over scored trials.</li>
+        <li><strong>Main-quarter structure.</strong> Trials 1–40, 41–80, 81–120, and 121–160 each contain 8–12 of every condition. Within a ListVersion, 0-back and 1-back share the same main ConditionType order.</li>
+        <li><strong>Letter-identity runs.</strong> Across displayed rows, center and flanker identity runs are capped at 4 and identical center/flanker-pair runs at 3. In 1-back, a run of three consecutive YES responses requires four identical centers.</li>
+        <li><strong>Congruency sequences.</strong> PerceptualCongruency and BehavioralCongruency each have maximum run length 3 across scored trials, including across quarter boundaries.</li>
+        <li><strong>Response sequence.</strong> CorrectResponse independently has maximum run length 3 across scored trials. In every main list, YES and NO have equal exact run-3 counts, with 2–4 per value and fewer than 10 pooled; their exact run-2 counts differ by no more than 5. The two main ListVersions use different run-2 count pairs.</li>
+        <li><strong>First-order transitions.</strong> For every binary field, yes→yes, yes→no, no→yes, and no→no differ by at most 1: sorted counts are [4,5,5,5] in practice and [39,40,40,40] in main.</li>
+        <li><strong>Letter counts.</strong> Identities are balanced as evenly as mathematically possible both within each legally variable condition/position cell and overall. In 0-back, H necessarily occupies 50% of both positions; S/C/F split the remainder. In 1-back main, every condition/position cell contains exactly 10 of each letter.</li>
+        <li><strong>Distinct versions.</strong> Versions differ at ≥50% of scored positions in ConditionType, CorrectResponse, and complete-row content; they are not cyclic rotations, reversed rotations, or repetitions of a shorter divisor-sized motif.</li>
+      </ol>
+    </section>
+
+    <section class="report-section" id="validation">
+      <div class="section-heading">
+        <p class="eyebrow">Verification rules</p>
+        <h2>How validation is scoped</h2>
+      </div>
+      <div class="definition-grid">
+        <article class="definition"><h3>Trial 0</h3><p>Excluded from scored condition counts, quarters, binary runs, transitions, letter quotas, and cross-version comparisons. Included in displayed center/flanker run checks and used as the previous state for 1-back trial 1.</p></article>
+        <article class="definition"><h3>Read-back validation</h3><p>Every written CSV is reopened and checked against its header, row numbering, logical task rules, derived labels, all sequence/count constraints, and version-level requirements using explicit exceptions.</p></article>
+      </div>
+    </section>
+
+            <section class="task-section" id="zero-back-properties">
+              <div class="section-heading">
+                <p class="eyebrow">Generated properties</p>
+                <h2>0-back main lists</h2>
+                <p>Diagnostics are shown separately for both fixed versions.</p>
+              </div>
+              
+      <article class="list-card" id="0back-v1">
+        <header class="list-header">
+          <div>
+            <p class="eyebrow">ListVersion 1</p>
+            <h3>0-back main</h3>
+          </div>
+          <span class="pass">Validated</span>
+        </header>
+        <div class="summary-grid">
+          <div><span>Scored trials</span><strong>160</strong></div>
+          <div><span>Conditions</span><strong>40 each</strong></div>
+          <div><span>Perceptual</span><strong>80 / 80</strong></div>
+          <div><span>Behavioral</span><strong>80 / 80</strong></div>
+          <div><span>Response</span><strong>80 / 80</strong></div>
+          <div><span>CSV hash</span><strong class="mono">52fa2fdd5037</strong></div>
+        </div>
+        <p class="file-link"><a href="stimulus_lists/ListVersion1_0back_main.csv">ListVersion1_0back_main.csv</a></p>
+
+        <div class="metric-grid">
+          <section class="metric span-2">
+            <h4>Condition distribution by quarter</h4>
+            <p>Each quarter is constrained to 8–12 occurrences of every condition.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Quarter</th><th scope="col">A1</th><th scope="col">A2</th><th scope="col">B1</th><th scope="col">B2</th></tr></thead><tbody><tr><td>Q1 (1–40)</td><td>10</td><td>9</td><td>12</td><td>9</td></tr><tr><td>Q2 (41–80)</td><td>10</td><td>10</td><td>8</td><td>12</td></tr><tr><td>Q3 (81–120)</td><td>9</td><td>10</td><td>10</td><td>11</td></tr><tr><td>Q4 (121–160)</td><td>11</td><td>11</td><td>10</td><td>8</td></tr><tr><td>Total</td><td>40</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Exact letter-identity runs</h4>
+            <p>Maximal episodes only; a length-3 episode is not also counted as length 2.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th><th scope="col">Run 5</th><th scope="col">Maximum</th></tr></thead><tbody><tr><td>Center</td><td>64</td><td>6</td><td>0</td><td>0</td><td>3</td></tr><tr><td>Flanker</td><td>5</td><td>35</td><td>0</td><td>0</td><td>3</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Scored letter counts</h4>
+            <p>Trial 0 is excluded from 1-back identity quotas.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">S</th><th scope="col">H</th><th scope="col">C</th><th scope="col">F</th><th scope="col">Total</th></tr></thead><tbody><tr><td>Center</td><td>27</td><td>80</td><td>27</td><td>26</td><td>160</td></tr><tr><td>Flanker</td><td>27</td><td>80</td><td>27</td><td>26</td><td>160</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>Exact binary-field runs</h4>
+            <p>Runs are detected across the complete scored sequence and reported by repeated value and pooled total.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">Value</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th></tr></thead><tbody><tr><td>Perceptual</td><td>yes</td><td>4</td><td>18</td><td>0</td></tr><tr><td>Perceptual</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Perceptual</td><td>total</td><td>9</td><td>35</td><td>0</td></tr><tr><td>Behavioral</td><td>yes</td><td>4</td><td>18</td><td>0</td></tr><tr><td>Behavioral</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>total</td><td>9</td><td>35</td><td>0</td></tr><tr><td>Correct response</td><td>yes</td><td>34</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>no</td><td>33</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>total</td><td>67</td><td>6</td><td>0</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>First-order transitions</h4>
+            <p>No wrap-around transition is counted. Each row must be a permutation of 39, 40, 40, 40.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">yes→yes</th><th scope="col">yes→no</th><th scope="col">no→yes</th><th scope="col">no→no</th></tr></thead><tbody><tr><td>Perceptual</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Behavioral</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Correct response</td><td>40</td><td>40</td><td>40</td><td>39</td></tr></tbody></table></div>
+          </section>
+        </div>
+      </article>
+    
+      <article class="list-card" id="0back-v2">
+        <header class="list-header">
+          <div>
+            <p class="eyebrow">ListVersion 2</p>
+            <h3>0-back main</h3>
+          </div>
+          <span class="pass">Validated</span>
+        </header>
+        <div class="summary-grid">
+          <div><span>Scored trials</span><strong>160</strong></div>
+          <div><span>Conditions</span><strong>40 each</strong></div>
+          <div><span>Perceptual</span><strong>80 / 80</strong></div>
+          <div><span>Behavioral</span><strong>80 / 80</strong></div>
+          <div><span>Response</span><strong>80 / 80</strong></div>
+          <div><span>CSV hash</span><strong class="mono">96e0eb570f85</strong></div>
+        </div>
+        <p class="file-link"><a href="stimulus_lists/ListVersion2_0back_main.csv">ListVersion2_0back_main.csv</a></p>
+
+        <div class="metric-grid">
+          <section class="metric span-2">
+            <h4>Condition distribution by quarter</h4>
+            <p>Each quarter is constrained to 8–12 occurrences of every condition.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Quarter</th><th scope="col">A1</th><th scope="col">A2</th><th scope="col">B1</th><th scope="col">B2</th></tr></thead><tbody><tr><td>Q1 (1–40)</td><td>10</td><td>10</td><td>8</td><td>12</td></tr><tr><td>Q2 (41–80)</td><td>9</td><td>10</td><td>11</td><td>10</td></tr><tr><td>Q3 (81–120)</td><td>10</td><td>10</td><td>12</td><td>8</td></tr><tr><td>Q4 (121–160)</td><td>11</td><td>10</td><td>9</td><td>10</td></tr><tr><td>Total</td><td>40</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Exact letter-identity runs</h4>
+            <p>Maximal episodes only; a length-3 episode is not also counted as length 2.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th><th scope="col">Run 5</th><th scope="col">Maximum</th></tr></thead><tbody><tr><td>Center</td><td>40</td><td>3</td><td>0</td><td>0</td><td>3</td></tr><tr><td>Flanker</td><td>9</td><td>20</td><td>0</td><td>0</td><td>3</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Scored letter counts</h4>
+            <p>Trial 0 is excluded from 1-back identity quotas.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">S</th><th scope="col">H</th><th scope="col">C</th><th scope="col">F</th><th scope="col">Total</th></tr></thead><tbody><tr><td>Center</td><td>27</td><td>80</td><td>27</td><td>26</td><td>160</td></tr><tr><td>Flanker</td><td>27</td><td>80</td><td>27</td><td>26</td><td>160</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>Exact binary-field runs</h4>
+            <p>Runs are detected across the complete scored sequence and reported by repeated value and pooled total.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">Value</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th></tr></thead><tbody><tr><td>Perceptual</td><td>yes</td><td>6</td><td>17</td><td>0</td></tr><tr><td>Perceptual</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Perceptual</td><td>total</td><td>11</td><td>34</td><td>0</td></tr><tr><td>Behavioral</td><td>yes</td><td>6</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>total</td><td>11</td><td>34</td><td>0</td></tr><tr><td>Correct response</td><td>yes</td><td>33</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>no</td><td>34</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>total</td><td>67</td><td>6</td><td>0</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>First-order transitions</h4>
+            <p>No wrap-around transition is counted. Each row must be a permutation of 39, 40, 40, 40.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">yes→yes</th><th scope="col">yes→no</th><th scope="col">no→yes</th><th scope="col">no→no</th></tr></thead><tbody><tr><td>Perceptual</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Behavioral</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Correct response</td><td>39</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+        </div>
+      </article>
+    
+            </section>
+            
+            <section class="task-section" id="one-back-properties">
+              <div class="section-heading">
+                <p class="eyebrow">Generated properties</p>
+                <h2>1-back main lists</h2>
+                <p>Diagnostics are shown separately for both fixed versions.</p>
+              </div>
+              
+      <article class="list-card" id="1back-v1">
+        <header class="list-header">
+          <div>
+            <p class="eyebrow">ListVersion 1</p>
+            <h3>1-back main</h3>
+          </div>
+          <span class="pass">Validated</span>
+        </header>
+        <div class="summary-grid">
+          <div><span>Scored trials</span><strong>160</strong></div>
+          <div><span>Conditions</span><strong>40 each</strong></div>
+          <div><span>Perceptual</span><strong>80 / 80</strong></div>
+          <div><span>Behavioral</span><strong>80 / 80</strong></div>
+          <div><span>Response</span><strong>80 / 80</strong></div>
+          <div><span>CSV hash</span><strong class="mono">1b76af841838</strong></div>
+        </div>
+        <p class="file-link"><a href="stimulus_lists/ListVersion1_1back_main.csv">ListVersion1_1back_main.csv</a></p>
+
+        <div class="metric-grid">
+          <section class="metric span-2">
+            <h4>Condition distribution by quarter</h4>
+            <p>Each quarter is constrained to 8–12 occurrences of every condition.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Quarter</th><th scope="col">A1</th><th scope="col">A2</th><th scope="col">B1</th><th scope="col">B2</th></tr></thead><tbody><tr><td>Q1 (1–40)</td><td>10</td><td>9</td><td>12</td><td>9</td></tr><tr><td>Q2 (41–80)</td><td>10</td><td>10</td><td>8</td><td>12</td></tr><tr><td>Q3 (81–120)</td><td>9</td><td>10</td><td>10</td><td>11</td></tr><tr><td>Q4 (121–160)</td><td>11</td><td>11</td><td>10</td><td>8</td></tr><tr><td>Total</td><td>40</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Exact letter-identity runs</h4>
+            <p>Maximal episodes only; a length-3 episode is not also counted as length 2. Identity runs include response-free trial 0.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th><th scope="col">Run 5</th><th scope="col">Maximum</th></tr></thead><tbody><tr><td>Center</td><td>3</td><td>34</td><td>3</td><td>0</td><td>4</td></tr><tr><td>Flanker</td><td>22</td><td>0</td><td>19</td><td>0</td><td>4</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Scored letter counts</h4>
+            <p>Trial 0 is excluded from 1-back identity quotas.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">S</th><th scope="col">H</th><th scope="col">C</th><th scope="col">F</th><th scope="col">Total</th></tr></thead><tbody><tr><td>Center</td><td>40</td><td>40</td><td>40</td><td>40</td><td>160</td></tr><tr><td>Flanker</td><td>40</td><td>40</td><td>40</td><td>40</td><td>160</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>Exact binary-field runs</h4>
+            <p>Runs are detected across the complete scored sequence and reported by repeated value and pooled total.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">Value</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th></tr></thead><tbody><tr><td>Perceptual</td><td>yes</td><td>1</td><td>19</td><td>0</td></tr><tr><td>Perceptual</td><td>no</td><td>2</td><td>19</td><td>0</td></tr><tr><td>Perceptual</td><td>total</td><td>3</td><td>38</td><td>0</td></tr><tr><td>Behavioral</td><td>yes</td><td>4</td><td>18</td><td>0</td></tr><tr><td>Behavioral</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>total</td><td>9</td><td>35</td><td>0</td></tr><tr><td>Correct response</td><td>yes</td><td>34</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>no</td><td>33</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>total</td><td>67</td><td>6</td><td>0</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>First-order transitions</h4>
+            <p>No wrap-around transition is counted. Each row must be a permutation of 39, 40, 40, 40.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">yes→yes</th><th scope="col">yes→no</th><th scope="col">no→yes</th><th scope="col">no→no</th></tr></thead><tbody><tr><td>Perceptual</td><td>39</td><td>40</td><td>40</td><td>40</td></tr><tr><td>Behavioral</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Correct response</td><td>40</td><td>40</td><td>40</td><td>39</td></tr></tbody></table></div>
+          </section>
+        </div>
+      </article>
+    
+      <article class="list-card" id="1back-v2">
+        <header class="list-header">
+          <div>
+            <p class="eyebrow">ListVersion 2</p>
+            <h3>1-back main</h3>
+          </div>
+          <span class="pass">Validated</span>
+        </header>
+        <div class="summary-grid">
+          <div><span>Scored trials</span><strong>160</strong></div>
+          <div><span>Conditions</span><strong>40 each</strong></div>
+          <div><span>Perceptual</span><strong>80 / 80</strong></div>
+          <div><span>Behavioral</span><strong>80 / 80</strong></div>
+          <div><span>Response</span><strong>80 / 80</strong></div>
+          <div><span>CSV hash</span><strong class="mono">5dc4156ad937</strong></div>
+        </div>
+        <p class="file-link"><a href="stimulus_lists/ListVersion2_1back_main.csv">ListVersion2_1back_main.csv</a></p>
+
+        <div class="metric-grid">
+          <section class="metric span-2">
+            <h4>Condition distribution by quarter</h4>
+            <p>Each quarter is constrained to 8–12 occurrences of every condition.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Quarter</th><th scope="col">A1</th><th scope="col">A2</th><th scope="col">B1</th><th scope="col">B2</th></tr></thead><tbody><tr><td>Q1 (1–40)</td><td>10</td><td>10</td><td>8</td><td>12</td></tr><tr><td>Q2 (41–80)</td><td>9</td><td>10</td><td>11</td><td>10</td></tr><tr><td>Q3 (81–120)</td><td>10</td><td>10</td><td>12</td><td>8</td></tr><tr><td>Q4 (121–160)</td><td>11</td><td>10</td><td>9</td><td>10</td></tr><tr><td>Total</td><td>40</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Exact letter-identity runs</h4>
+            <p>Maximal episodes only; a length-3 episode is not also counted as length 2. Identity runs include response-free trial 0.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th><th scope="col">Run 5</th><th scope="col">Maximum</th></tr></thead><tbody><tr><td>Center</td><td>5</td><td>33</td><td>3</td><td>0</td><td>4</td></tr><tr><td>Flanker</td><td>19</td><td>2</td><td>19</td><td>0</td><td>4</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric">
+            <h4>Scored letter counts</h4>
+            <p>Trial 0 is excluded from 1-back identity quotas.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Position</th><th scope="col">S</th><th scope="col">H</th><th scope="col">C</th><th scope="col">F</th><th scope="col">Total</th></tr></thead><tbody><tr><td>Center</td><td>40</td><td>40</td><td>40</td><td>40</td><td>160</td></tr><tr><td>Flanker</td><td>40</td><td>40</td><td>40</td><td>40</td><td>160</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>Exact binary-field runs</h4>
+            <p>Runs are detected across the complete scored sequence and reported by repeated value and pooled total.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">Value</th><th scope="col">Run 2</th><th scope="col">Run 3</th><th scope="col">Run 4</th></tr></thead><tbody><tr><td>Perceptual</td><td>yes</td><td>2</td><td>19</td><td>0</td></tr><tr><td>Perceptual</td><td>no</td><td>3</td><td>18</td><td>0</td></tr><tr><td>Perceptual</td><td>total</td><td>5</td><td>37</td><td>0</td></tr><tr><td>Behavioral</td><td>yes</td><td>6</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>no</td><td>5</td><td>17</td><td>0</td></tr><tr><td>Behavioral</td><td>total</td><td>11</td><td>34</td><td>0</td></tr><tr><td>Correct response</td><td>yes</td><td>33</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>no</td><td>34</td><td>3</td><td>0</td></tr><tr><td>Correct response</td><td>total</td><td>67</td><td>6</td><td>0</td></tr></tbody></table></div>
+          </section>
+
+          <section class="metric span-2">
+            <h4>First-order transitions</h4>
+            <p>No wrap-around transition is counted. Each row must be a permutation of 39, 40, 40, 40.</p>
+            <div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">yes→yes</th><th scope="col">yes→no</th><th scope="col">no→yes</th><th scope="col">no→no</th></tr></thead><tbody><tr><td>Perceptual</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Behavioral</td><td>40</td><td>40</td><td>40</td><td>39</td></tr><tr><td>Correct response</td><td>39</td><td>40</td><td>40</td><td>40</td></tr></tbody></table></div>
+          </section>
+        </div>
+      </article>
+    
+            </section>
+            
+    <section class="report-section" id="practice">
+      <div class="section-heading">
+        <p class="eyebrow">Concise audit</p>
+        <h2>Practice lists</h2>
+        <p>Practice lists receive the same applicable logical, balance, run, transition, identity, and distinctness checks; detailed diagnostics are reserved for main lists.</p>
+      </div>
+      <article class="panel">
+        <div class="table-wrap"><table><thead><tr><th scope="col">File</th><th scope="col">Version</th><th scope="col">Task</th><th scope="col">Displayed</th><th scope="col">Scored</th><th scope="col">A1/A2/B1/B2</th><th scope="col">Max binary run</th><th scope="col">Max letter run</th><th scope="col">CSV hash</th><th scope="col">Status</th></tr></thead><tbody><tr><td>ListVersion1_0back_practice.csv</td><td>1</td><td>0-back</td><td>20</td><td>20</td><td>5 / 5 / 5 / 5</td><td>3</td><td>3</td><td>59ac2570a817</td><td>PASS</td></tr><tr><td>ListVersion1_1back_practice.csv</td><td>1</td><td>1-back</td><td>21</td><td>20</td><td>5 / 5 / 5 / 5</td><td>3</td><td>4</td><td>18ef5b363cb6</td><td>PASS</td></tr><tr><td>ListVersion2_0back_practice.csv</td><td>2</td><td>0-back</td><td>20</td><td>20</td><td>5 / 5 / 5 / 5</td><td>3</td><td>3</td><td>700ea4271394</td><td>PASS</td></tr><tr><td>ListVersion2_1back_practice.csv</td><td>2</td><td>1-back</td><td>21</td><td>20</td><td>5 / 5 / 5 / 5</td><td>3</td><td>4</td><td>8114790c855c</td><td>PASS</td></tr></tbody></table></div>
+      </article>
+    </section>
+
+    <section class="report-section" id="versions">
+      <div class="section-heading">
+        <p class="eyebrow">Cross-version validation</p>
+        <h2>Materially distinct fixed lists</h2>
+        <p>Hamming distances exclude TrialNumber and the 1-back trial 0. Main ConditionType orders are matched across tasks within each version, while versions 1 and 2 remain materially different.</p>
+      </div>
+      <article class="panel">
+        <div class="table-wrap"><table><thead><tr><th scope="col">Task</th><th scope="col">Block</th><th scope="col">Type distance</th><th scope="col">Response distance</th><th scope="col">Complete-row distance</th><th scope="col">Required</th><th scope="col">Status</th></tr></thead><tbody><tr><td>0-back</td><td>practice</td><td>17</td><td>10</td><td>17</td><td>≥ 10</td><td>PASS</td></tr><tr><td>0-back</td><td>main</td><td>149</td><td>124</td><td>154</td><td>≥ 80</td><td>PASS</td></tr><tr><td>1-back</td><td>practice</td><td>18</td><td>14</td><td>19</td><td>≥ 10</td><td>PASS</td></tr><tr><td>1-back</td><td>main</td><td>149</td><td>124</td><td>158</td><td>≥ 80</td><td>PASS</td></tr></tbody></table></div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="page">Generated deterministically by <code>generate_stimulus_lists.py</code> after all CSV read-back validations passed.</div>
+  </footer>
+</body>
+</html>

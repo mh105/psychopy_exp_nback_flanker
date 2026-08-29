@@ -1,7 +1,8 @@
 # N-back flanker task (no pupil)
-Last edit: 02/25/2026
+Last edit: 08/28/2026
 
 ## Edit history
+- 08/28/2026 by Alex He - produced maximally balanced stimuli lists in two versions that can be used for pre- and post-DBS
 - 02/25/2026 by Alex He - increased main block trials from 120 to 160, and updated feedback text for incorrect
 - 02/13/2026 by Alex He - reduced spacing between central and flanking letters and added option to repeat practice
 - 12/16/2025 by Alex He - increased ITI fixation cross size and duration from 1s to 2s

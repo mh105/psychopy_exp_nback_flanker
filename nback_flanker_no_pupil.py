@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2024.2.2a1),
-    on Wed Feb 25 10:47:04 2026
+    on Fri Aug 28 22:16:35 2026
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -128,6 +128,7 @@ expName = 'nback_flanker_no_pupil'  # from the Builder filename that created thi
 expInfo = {
     'participant': f"{randint(0, 999999):06.0f}",
     'session': '001',
+    'list_version': '1',
     'date|hid': data.getDateStr(),
     'expName|hid': expName,
     'psychopyVersion|hid': psychopyVersion,
@@ -511,354 +512,232 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     dev.activate_line(bitmask=task_ID_code)  # special code for task ID
     
     # Run 'Begin Experiment' code from condition_setup
-    """
-    Congruency is defined at the response level depending on the N-back task correct response.
+    import csv
     
-    0-Back trial types:
-        A) Correct response = NO (C_t != H)
-            A1 EASY  (congruent):   F_t ≠ C_t
-            A2 HARD  (incongruent): F_t = C_t
+    # ------------------------------------------------------
+    # Validate selected stimulus-list version
+    # ------------------------------------------------------
+    list_version = expInfo.get('list_version')
+    if list_version not in ('1', '2'):
+        raise ValueError(
+            f"Invalid list_version {list_version!r}. Enter '1' or '2'."
+        )
     
-        B) Correct response = YES (C_t = H)
-            B1 EASY  (congruent):   F_t = C_t
-            B2 HARD  (incongruent): F_t ≠ C_t
-    
-    1-Back trial types:
-        A) Correct response = NO (C_t != C_{t-1})
-            A1 EASY  (congruent):   F_t ≠ C_t, F_t ≠ C_{t-1}, F_t ≠ F_{t-1}
-            A2 HARD  (incongruent): F_t = C_t  and  F_t = F_{t-1}
-    
-        B) Correct response = YES (C_t = C_{t-1})
-            B1 EASY  (congruent):   F_t = C_t  (== C_{t-1})
-            B2 HARD  (incongruent): F_t ≠ C_t  and  F_t ≠ F_{t-1}
-    
-    Implementation notes:
-    - We generate the entire 1-back block using a seed previous state (C_{-1}, F_{-1}).
-    - A2 is only feasible if F_{t-1} != C_{t-1}. The scheduler always chooses from remaining feasible types; if A2 isn't
-      feasible at a step, it is deferred until it becomes feasible later.
-    - We distribute trial types evenly: base = n_trials // 4 for each trial type
-    """
-    
-    # single RNG for this session
+    # Single RNG for this session; used later for response-cue jitter
     rng = np.random.default_rng()
     
-    # ------------------------------------------------------
-    # Letters used in the task
-    # ------------------------------------------------------
-    letters = ['S', 'H', 'C', 'F']
-    target0 = 'H'  # target letter in the 0-back block
+    # Still used by the later 0-back instruction routines
+    target0 = 'H'
     
     # ------------------------------------------------------
-    # Visual stimuli durations
+    # Visual stimulus durations
     # ------------------------------------------------------
     stimulusDur = 0.5  # seconds
     cueDur = 3.0       # seconds
     respCueJitter = [1.5, 3.5]  # seconds
     
     # ------------------------------------------------------
-    # Numbers of blocks and trials
+    # Blocks
     # ------------------------------------------------------
     n_back_blocks = [0, 1]  # 0-back first, then 1-back
-    n_practice = 20
-    n_main = 160
-    
     
     # ------------------------------------------------------
-    # Helper functions
+    # Load fixed stimulus lists
     # ------------------------------------------------------
-    def pick_not_in(excluded, rng, letters=letters):
-        """
-        pick a random letter NOT in a set
-        """
-        candidates = [letter for letter in letters if letter not in excluded]
-        return rng.choice(candidates)
+    expected_csv_fields = [
+        'TrialNumber',
+        'CenterLetter',
+        'FlankerLetter',
+        'PerceptualCongruency',
+        'BehavioralCongruency',
+        'CorrectResponse',
+        'ConditionType',
+    ]
+    
+    congruency_map = {
+        'yes': 'congruent',
+        'no': 'incongruent',
+        '': None,
+    }
+    
+    # Values are: correctAns, is_target, correctKey
+    response_map = {
+        'yes': ('YES', 1, '1'),
+        'no': ('NO', 0, '2'),
+        '': (None, None, None),
+    }
     
     
-    def other(x, rng, letters=letters):
-        """
-        pick any letter except x
-        """
-        candidates = [letter for letter in letters if letter != x]
-        return rng.choice(candidates)
+    def load_stimulus_list(n_back, block):
+        filename = (
+            f'ListVersion{list_version}_{n_back}back_{block}.csv'
+        )
+        path = os.path.join(
+            _thisDir,
+            'resource',
+            'stimulus_lists',
+            filename,
+        )
     
-    
-    def _type_counts(n_trials):
-        types = ['A1', 'A2', 'B1', 'B2']
-        base = n_trials // 4
-        rem = n_trials % 4
-        assert rem == 0, "n_trials must be multiple of 4 for balancing."
-        counts = {b: base for b in types}
-        return counts
-    
-    
-    # ======================================================
-    # 0-BACK
-    # ======================================================
-    def make_0back(n_trials, target, rng):
-        """
-        make_0back():
-            Builds a FULLY BALANCED 0-back block across the four trial types (A1, A2, B1, B2)
-        """
-        counts = _type_counts(n_trials)  # dict: {'A1': n, 'A2': n, 'B1': n, 'B2': n}
         rows = []
     
-        for b in counts.keys():
-            for _ in range(counts[b]):
+        with open(path, 'r', encoding='utf-8-sig', newline='') as handle:
+            reader = csv.DictReader(handle)
     
-                if b == 'A1':  # NO + congruent
-                    C = other(target, rng)
-                    F = pick_not_in({C, target}, rng)
-                    resp_correct = 'NO'
-                    resp_cong = 'congruent'
+            if reader.fieldnames != expected_csv_fields:
+                raise ValueError(
+                    f'Unexpected columns in {filename}: {reader.fieldnames}'
+                )
     
-                elif b == 'A2':  # NO + incongruent
-                    C = other(target, rng)
-                    F = C
-                    resp_correct = 'NO'
-                    resp_cong = 'incongruent'
-    
-                elif b == 'B1':  # YES + congruent
-                    C = target
-                    F = C
-                    resp_correct = 'YES'
-                    resp_cong = 'congruent'
-    
-                else:  # B2: YES + incongruent
-                    C = target
-                    F = other(target, rng)
-                    resp_correct = 'YES'
-                    resp_cong = 'incongruent'
+            for csv_row in reader:
+                correct_ans, is_target, correct_key = response_map[
+                    csv_row['CorrectResponse']
+                ]
     
                 rows.append(dict(
-                    n_back=0,
-                    central_letter=C,
-                    flanker_letter=F,
-                    congruency=resp_cong,
-                    is_target=int(resp_correct == 'YES'),
-                    correctAns=resp_correct,
-                    correctKey=('1' if resp_correct == 'YES' else '2'),
-                    type=b,
+                    n_back=n_back,
+                    central_letter=csv_row['CenterLetter'],
+                    flanker_letter=csv_row['FlankerLetter'],
+                    congruency=congruency_map[
+                        csv_row['BehavioralCongruency']
+                    ],
+                    is_target=is_target,
+                    correctAns=correct_ans,
+                    correctKey=correct_key,
+                    type=csv_row['ConditionType'] or None,
                 ))
-    
-        # randomize order with RNG
-        rng.shuffle(rows)
-        return rows
-    
-    
-    # ======================================================
-    # 1-BACK
-    # ======================================================
-    def make_1back(n_trials, rng, max_run=2):
-        """
-        make_1back():
-            Builds a FULLY BALANCED 1-back block across the four trial types (A1, A2, B1, B2)
-    
-            Key features:
-                • Balances type counts
-                • Enforces all feasibility rules:
-                    - A2 only possible if previous trial had F_prev != C_prev
-                    - No more than 'max_run' repeats of same type in a row
-                • Uses a seed previous state (C_prev, F_prev).
-                • Uses backtracking with a hard call limit to avoid infinite loops.
-    
-            Returns:
-                rows - list of dictionaries ready for PsychoPy trial loops.
-        """
-        # Set max recursive/backtracking calls based on n_trials
-        max_calls = n_trials * 1e4
-    
-        # Seed "previous" state
-        C_prev = rng.choice(letters)
-        F_prev = rng.choice([letter for letter in letters if letter != C_prev])
-    
-        # Remaining quota for each type
-        remaining = _type_counts(n_trials)  # dict: {'A1': n, 'A2': n, 'B1': n, 'B2': n}
-        rows = []
-    
-        # Burner trial (t = 0): logged as first row but not assigned a type
-        rows.append(dict(
-            n_back=1,
-            central_letter=C_prev,
-            flanker_letter=F_prev,
-            congruency=None,
-            is_target=None,
-            correctAns=None,
-            correctKey=None,
-            type=None,
-        ))
-    
-        # --- Safety: limit total recursive/backtracking calls so we don't "freeze" ---
-        call_count = {'n': 0}  # mutable wrapper so inner function can update
-    
-        # -----------------------------------------
-        # Internal helper: which trial types are allowed next?
-        # -----------------------------------------
-        def candidates(Cp, Fp, last_type, run_len, remaining):
-            """
-            Determine which type choices are feasible for the next trial,
-            based on:
-                - remaining quota for each trial type
-                - max_run constraint for the same trial type
-                - A2 feasibility rule (needs F_prev != C_prev)
-            """
-            feas = []
-            for b in ('A1', 'A2', 'B1', 'B2'):
-                if remaining[b] == 0:
-                    continue
-                if b == last_type and run_len >= max_run:
-                    continue
-                if b == 'A2' and Fp == Cp:
-                    # A2 (NO, hard) only possible when F_prev != C_prev
-                    continue
-                feas.append(b)
-    
-            if not feas:
-                return []
-    
-            # Weighted random sampling without replacement:
-            def priority(b):
-                bias = 2.0 if b == 'A2' else 1.0
-                return rng.random() ** (1.0 / (remaining[b] * bias))
-    
-            # Sort so that larger weights tend to come first
-            ordered = sorted(feas, key=priority, reverse=True)
-    
-            return ordered
-    
-        # -----------------------------------------
-        # Recursive backtracking scheduler
-        # -----------------------------------------
-        def step(Cp, Fp, last_type, run_len, remaining):
-            """
-            Recursively assign types and build the entire block.
-            Backtracks whenever a choice leads to dead-end later.
-            """
-            # Bump global call counter and bail if too big
-            call_count['n'] += 1
-            if call_count['n'] > max_calls:
-    
-                # print out the types assigned so far for debugging
-                assigned_types = [r['type'] for r in rows]
-                print(f"C_prev={C_prev}, F_prev={F_prev} failed after {call_count['n']} calls."
-                      f"Cp={Cp}, Fp={Fp}, remaining={remaining}. trial count: {len(assigned_types)}")
-                raise RuntimeError("Exceeded max recursive calls in make_1back().")
-    
-            # Done when all type counts are zero
-            if sum(remaining.values()) == 0:
-                return True
-    
-            cand = candidates(Cp, Fp, last_type, run_len, remaining)
-    
-            # No valid type for next trial -> backtrack
-            if not cand:
-                return False
-    
-            for b in cand:
-                # Generate next (C_t, F_t) based on type rules
-                if b == 'B1':
-                    # YES, easy: C_t = C_prev, F_t = C_t
-                    C_t = Cp
-                    F_t = C_t
-                    resp_correct = 'YES'
-                    resp_cong = 'congruent'
-    
-                elif b == 'B2':
-                    # YES, hard: C_t = C_prev, F_t != C_t and != F_prev
-                    C_t = Cp
-                    F_t = pick_not_in({C_t, Fp}, rng)
-                    resp_correct = 'YES'
-                    resp_cong = 'incongruent'
-    
-                elif b == 'A1':
-                    # NO, easy: C_t != C_prev, F_t != C_t, C_prev, F_prev
-                    C_t = pick_not_in({Cp}, rng)
-                    F_t = pick_not_in({C_t, Cp, Fp}, rng)
-                    resp_correct = 'NO'
-                    resp_cong = 'congruent'
-    
-                else:  # 'A2'
-                    # NO, hard: C_t = F_prev (and F_prev != C_prev), F_t = C_t
-                    C_t = Fp
-                    F_t = C_t
-                    resp_correct = 'NO'
-                    resp_cong = 'incongruent'
-    
-                # Use up one slot of this type
-                remaining[b] -= 1
-    
-                rows.append(dict(
-                    n_back=1,
-                    central_letter=C_t,
-                    flanker_letter=F_t,
-                    congruency=resp_cong,
-                    is_target=int(resp_correct == 'YES'),
-                    correctAns=resp_correct,
-                    correctKey=('1' if resp_correct == 'YES' else '2'),
-                    type=b,
-                ))
-    
-                # Track run length for this type
-                new_run = run_len + 1 if b == last_type else 1
-    
-                # Recurse; if success, return True
-                if step(C_t, F_t, b, new_run, remaining):
-                    return True
-    
-                # Backtrack
-                rows.pop()
-                remaining[b] += 1
-    
-            return False
-    
-        # -----------------------------------------
-        # Constructing the 1-back block
-        # -----------------------------------------
-        step(C_prev, F_prev, last_type=None, run_len=0, remaining=remaining)
     
         return rows
     
     
-    # ======================================================
-    # PRACTICE + MAIN TRIAL SETUP
-    # ======================================================
-    practice0 = make_0back(n_trials=n_practice, target=target0, rng=rng)
-    practice1 = make_1back(n_trials=n_practice, rng=rng)
-    trials0 = make_0back(n_trials=n_main, target=target0, rng=rng)
-    
-    # Due to the complexity of balancing 1-back blocks, we regenerate until we get a valid one.
-    while True:
-        try:
-            trials1 = make_1back(n_trials=n_main, rng=rng)
-            break
-        except RuntimeError:
-            continue
+    practice0 = load_stimulus_list(0, 'practice')
+    practice1 = load_stimulus_list(1, 'practice')
+    trials0 = load_stimulus_list(0, 'main')
+    trials1 = load_stimulus_list(1, 'main')
     
     # ======================================================
     # Sanity checks
     # ======================================================
-    # Create a histogram of A2 positions
-    # import matplotlib.pyplot as plt
-    # A2_positions = [i for i, r in enumerate(trials1) if r['type'] == 'A2']
-    # plt.hist(A2_positions, bins=10, range=(0, len(trials1)))
-    # plt.show()
+    expected_keys = (
+        'n_back',
+        'central_letter',
+        'flanker_letter',
+        'congruency',
+        'is_target',
+        'correctAns',
+        'correctKey',
+        'type',
+    )
     
-    # Make sure type counts are balanced across trials
-    for name, lst in [
-        ('practice0', practice0),
-        ('practice1', practice1),
-        ('0back',     trials0),
-        ('1back',     trials1),
+    allowed_letters = {'S', 'H', 'C', 'F'}
+    
+    for name, rows, expected_n_back, expected_scored in [
+        ('practice0', practice0, 0, 20),
+        ('practice1', practice1, 1, 20),
+        ('trials0', trials0, 0, 160),
+        ('trials1', trials1, 1, 160),
     ]:
-        counts = {'A1': 0, 'A2': 0, 'B1': 0, 'B2': 0}
-        for r in lst:
-            assert 'congruency' in r and 'correctKey' in r and 'type' in r, \
-                f"Missing labels in {name}"
-            if r['type'] is not None:
-                counts[r['type']] += 1
+        # Exact dictionary keys and key order
+        assert all(
+            tuple(row.keys()) == expected_keys for row in rows
+        ), f'Incorrect dictionary keys in {name}'
     
-        base = len(lst) // 4
-        for b in counts.keys():
-            assert counts[b] == base, f"Unbalanced type counts in {name}: {counts}"
+        # Base value types and n-back label
+        assert all(
+            type(row['n_back']) is int
+            and type(row['central_letter']) is str
+            and type(row['flanker_letter']) is str
+            for row in rows
+        ), f'Incorrect base value types in {name}'
+    
+        assert all(
+            row['n_back'] == expected_n_back for row in rows
+        ), f'Incorrect n_back value in {name}'
+    
+        # Require exactly the four permitted letters
+        used_letters = {
+            letter
+            for row in rows
+            for letter in (
+                row['central_letter'],
+                row['flanker_letter'],
+            )
+        }
+        assert used_letters == allowed_letters, (
+            f'Unexpected letter set in {name}: {used_letters}'
+        )
+    
+        # Count scored trials. The 1-back lists also contain trial-0 burn-in.
+        scored_rows = [
+            row for row in rows if row['type'] is not None
+        ]
+        assert len(scored_rows) == expected_scored, (
+            f'Expected {expected_scored} scored trials in {name}, '
+            f'found {len(scored_rows)}'
+        )
+    
+        expected_displayed = expected_scored + (
+            1 if expected_n_back == 1 else 0
+        )
+        assert len(rows) == expected_displayed, (
+            f'Expected {expected_displayed} displayed rows in {name}, '
+            f'found {len(rows)}'
+        )
+    
+        assert (
+            rows[0]['type'] is None
+        ) == (
+            expected_n_back == 1
+        ), f'Incorrect burn-in structure in {name}'
+    
+        # Verify the legacy value types, including None on 1-back trial 0.
+        for row in rows:
+            if row['type'] is None:
+                assert all(
+                    row[key] is None
+                    for key in (
+                        'congruency',
+                        'is_target',
+                        'correctAns',
+                        'correctKey',
+                    )
+                ), f'Burn-in fields must be None in {name}'
+            else:
+                assert (
+                    type(row['congruency']) is str
+                    and type(row['is_target']) is int
+                    and type(row['correctAns']) is str
+                    and type(row['correctKey']) is str
+                    and type(row['type']) is str
+                ), f'Incorrect scored-row value types in {name}'
+    
+        # Preserve the existing balanced-type sanity check.
+        counts = {
+            trial_type: sum(
+                row['type'] == trial_type for row in scored_rows
+            )
+            for trial_type in ('A1', 'A2', 'B1', 'B2')
+        }
+        expected_per_type = expected_scored // 4
+        assert all(
+            count == expected_per_type for count in counts.values()
+        ), f'Unbalanced type counts in {name}: {counts}'
+    
+    # Verify that H is the 0-back target and determines response coding.
+    assert target0 == 'H', 'The 0-back target must be H'
+    
+    for row in practice0 + trials0:
+        expected_yes = row['central_letter'] == 'H'
+    
+        assert (
+            row['is_target'] == int(expected_yes)
+            and row['correctAns'] == (
+                'YES' if expected_yes else 'NO'
+            )
+            and row['correctKey'] == (
+                '1' if expected_yes else '2'
+            )
+        ), '0-back response coding does not use H as its target'
     
     
     # --- Initialize components for Routine "welcome" ---
