@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2024.2.2a1),
-    on Fri Aug 28 22:16:35 2026
+    on Wed Sep 23 20:30:18 2026
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -518,9 +518,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # Validate selected stimulus-list version
     # ------------------------------------------------------
     list_version = expInfo.get('list_version')
-    if list_version not in ('1', '2'):
+    if list_version not in ('1', '2', '3'):
         raise ValueError(
-            f"Invalid list_version {list_version!r}. Enter '1' or '2'."
+            f"Invalid list_version {list_version!r}. Enter '1', '2', or '3'."
         )
     
     # Single RNG for this session; used later for response-cue jitter

@@ -1,7 +1,8 @@
 # N-back flanker task (no pupil)
-Last edit: 08/28/2026
+Last edit: 09/23/2026
 
 ## Edit history
+- 09/23/2026 by Alex He - added a third maximally balanced stimuli list to be used for post-DBS with Stim ON/OFF
 - 08/28/2026 by Alex He - produced maximally balanced stimuli lists in two versions that can be used for pre- and post-DBS
 - 02/25/2026 by Alex He - increased main block trials from 120 to 160, and updated feedback text for incorrect
 - 02/13/2026 by Alex He - reduced spacing between central and flanking letters and added option to repeat practice

@@ -8,11 +8,12 @@ Run from the project root with:
 
     uv run resource/generate_stimulus_lists.py
 
-The script writes two reproducible ListVersions to ``resource/stimulus_lists``
+The script writes three reproducible ListVersions to ``resource/stimulus_lists``
 and creates ``resource/generate_stimulus_lists_report.html``. The generated
 HTML report is the authoritative description of the constructs, condition
 definitions, list constraints, validation policy, and observed main-list
-properties.
+properties. Existing CSVs must match the deterministic output and are never
+overwritten.
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ import itertools
 from collections import Counter
 from dataclasses import dataclass
 from html import escape
+from io import StringIO
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -39,7 +41,7 @@ NON_TARGET_LETTERS = (0, 2, 3)
 TARGET = 1  # H
 TASKS = ("0back", "1back")
 BLOCKS = ("practice", "main")
-VERSIONS = (1, 2)
+VERSIONS = (1, 2, 3)
 TYPE_NAMES = ("A1", "A2", "B1", "B2")
 BINARY_FIELDS = (
     "PerceptualCongruency",
@@ -77,10 +79,12 @@ TYPE_FIELDS = {
 PRACTICE_0BACK_ORDERS = (
     "03220112331021203310",
     "11303213002320322011",
+    "23300032113021201132",
 )
 PRACTICE_1BACK_ORDERS = (
     "13220312300123312001",
     "22312331031200130012",
+    "10023301200312231231",
 )
 MAIN_ORDERS = (
     "1033103310331220122033100322012201220122012231003103310331033103"
@@ -89,6 +93,9 @@ MAIN_ORDERS = (
     "3310331033103312201220122300122013301301220122012331033103310031"
     "0331220122012231033103312201220122012013301330122012201220122013"
     "30122012201220131033103310031033",
+    "1233103310331033100322012201330122012231003103310331033122012201"
+    "3301220130122013301330122013301220103312001220331220122013013301"
+    "33012201220133012201223122012201",
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -519,7 +526,10 @@ def validate_type_order(
 def validate_order_group_distinctness(
     orders: Sequence[tuple[int, ...]], block: str, context: str
 ) -> None:
-    require(len(orders) == len(VERSIONS), f"{context}: expected two ListVersions")
+    require(
+        len(orders) == len(VERSIONS),
+        f"{context}: expected {len(VERSIONS)} ListVersions",
+    )
     threshold = (20 if block == "practice" else 160) // 2
     for (left_version, left), (right_version, right) in itertools.combinations(
         zip(VERSIONS, orders), 2
@@ -668,10 +678,20 @@ def write_lists(
     paths: dict[ListKey, Path] = {}
     for generated in generated_lists:
         path = OUTPUT_DIRECTORY / generated.key.filename
-        with path.open("w", encoding="utf-8", newline="") as handle:
-            writer = csv.writer(handle, lineterminator="\n")
-            writer.writerow(HEADER)
-            writer.writerows(csv_rows(generated))
+        buffer = StringIO(newline="")
+        writer = csv.writer(buffer, lineterminator="\n")
+        writer.writerow(HEADER)
+        writer.writerows(csv_rows(generated))
+        content = buffer.getvalue().encode("utf-8")
+        if path.exists():
+            require(
+                path.read_bytes() == content,
+                f"{path.name}: existing CSV differs from generated output; "
+                "refusing to overwrite it",
+            )
+        else:
+            with path.open("xb") as handle:
+                handle.write(content)
         paths[generated.key] = path
     expected_paths = set(paths.values())
     actual_paths = set(OUTPUT_DIRECTORY.glob("*.csv"))
@@ -940,8 +960,8 @@ def read_and_validate_csv(key: ListKey, path: Path) -> ValidatedList:
 
 def validate_cross_version_groups(
     validated: Sequence[ValidatedList],
-) -> dict[tuple[str, str], tuple[int, int, int]]:
-    distances: dict[tuple[str, str], tuple[int, int, int]] = {}
+) -> dict[tuple[str, str, int, int], tuple[int, int, int]]:
+    distances: dict[tuple[str, str, int, int], tuple[int, int, int]] = {}
     for task in TASKS:
         for block in BLOCKS:
             group = sorted(
@@ -956,41 +976,43 @@ def validate_cross_version_groups(
                 [value.key.version for value in group] == list(VERSIONS),
                 f"{task} {block}: missing ListVersion",
             )
-            left, right = group
-            threshold = left.key.n_scored // 2
-            type_distance = hamming(left.types, right.types)
-            response_distance = hamming(
-                tuple(row[4] for row in left.complete_rows),
-                tuple(row[4] for row in right.complete_rows),
-            )
-            row_distance = hamming(left.complete_rows, right.complete_rows)
-            context = f"{task} {block} ListVersion1/2"
-            require(
-                type_distance >= threshold,
-                f"{context}: type Hamming distance {type_distance} < {threshold}",
-            )
-            require(
-                row_distance >= threshold,
-                f"{context}: row Hamming distance {row_distance} < {threshold}",
-            )
-            require(
-                response_distance >= threshold,
-                f"{context}: CorrectResponse Hamming distance "
-                f"{response_distance} < {threshold}",
-            )
-            require(
-                not dihedral_equivalent(left.types, right.types),
-                f"{context}: type sequences are rotation/reversal equivalent",
-            )
-            require(
-                not dihedral_equivalent(left.complete_rows, right.complete_rows),
-                f"{context}: complete rows are rotation/reversal equivalent",
-            )
-            distances[(task, block)] = (
-                type_distance,
-                response_distance,
-                row_distance,
-            )
+            for left, right in itertools.combinations(group, 2):
+                threshold = left.key.n_scored // 2
+                type_distance = hamming(left.types, right.types)
+                response_distance = hamming(
+                    tuple(row[4] for row in left.complete_rows),
+                    tuple(row[4] for row in right.complete_rows),
+                )
+                row_distance = hamming(left.complete_rows, right.complete_rows)
+                context = (
+                    f"{task} {block} ListVersion{left.key.version}/{right.key.version}"
+                )
+                require(
+                    type_distance >= threshold,
+                    f"{context}: type Hamming distance {type_distance} < {threshold}",
+                )
+                require(
+                    row_distance >= threshold,
+                    f"{context}: row Hamming distance {row_distance} < {threshold}",
+                )
+                require(
+                    response_distance >= threshold,
+                    f"{context}: CorrectResponse Hamming distance "
+                    f"{response_distance} < {threshold}",
+                )
+                require(
+                    not dihedral_equivalent(left.types, right.types),
+                    f"{context}: type sequences are rotation/reversal equivalent",
+                )
+                require(
+                    not dihedral_equivalent(left.complete_rows, right.complete_rows),
+                    f"{context}: complete rows are rotation/reversal equivalent",
+                )
+                distances[(task, block, left.key.version, right.key.version)] = (
+                    type_distance,
+                    response_distance,
+                    row_distance,
+                )
 
     for version in VERSIONS:
         zero = next(
@@ -1188,13 +1210,13 @@ def render_main_list(
           </section>
         </div>
       </article>
-    """
+    """.rstrip() + "\n"
 
 
 def write_report(
     validated: Sequence[ValidatedList],
     paths: dict[ListKey, Path],
-    distances: dict[tuple[str, str], tuple[int, int, int]],
+    distances: dict[tuple[str, str, int, int], tuple[int, int, int]],
 ) -> None:
     main_sections = []
     for task in TASKS:
@@ -1215,7 +1237,7 @@ def write_report(
               <div class="section-heading">
                 <p class="eyebrow">Generated properties</p>
                 <h2>{'0-back' if task == '0back' else '1-back'} main lists</h2>
-                <p>Diagnostics are shown separately for both fixed versions.</p>
+                <p>Diagnostics are shown separately for all three fixed versions.</p>
               </div>
               {cards}
             </section>
@@ -1244,21 +1266,22 @@ def write_report(
             )
 
     distance_rows = []
-    for task in TASKS:
-        for block in BLOCKS:
-            type_distance, response_distance, row_distance = distances[(task, block)]
-            threshold = 10 if block == "practice" else 80
-            distance_rows.append(
-                [
-                    "0-back" if task == "0back" else "1-back",
-                    block,
-                    type_distance,
-                    response_distance,
-                    row_distance,
-                    f"≥ {threshold}",
-                    "PASS",
-                ]
-            )
+    for (task, block, left_version, right_version), (
+        type_distance, response_distance, row_distance
+    ) in distances.items():
+        threshold = 10 if block == "practice" else 80
+        distance_rows.append(
+            [
+                "0-back" if task == "0back" else "1-back",
+                block,
+                f"{left_version} / {right_version}",
+                type_distance,
+                response_distance,
+                row_distance,
+                f"≥ {threshold}",
+                "PASS",
+            ]
+        )
 
     document = """<!doctype html>
 <html lang="en">
@@ -1458,10 +1481,10 @@ def write_report(
     <div class="page">
       <p class="eyebrow">Final stimulus framework</p>
       <h1>N-back Flanker Stimulus Lists</h1>
-      <p class="lede">A single, task-specific account of perceptual and behavioral congruency, the constraints used to generate two fixed list versions, and the observed properties of every main list.</p>
+      <p class="lede">A single, task-specific account of perceptual and behavioral congruency, the constraints used to generate three fixed list versions, and the observed properties of every main list.</p>
       <div class="status-row">
-        <span>8 CSVs validated</span>
-        <span>2 fixed versions</span>
+        <span>12 CSVs validated</span>
+        <span>3 fixed versions</span>
         <span>160 scored main trials per task</span>
         <span>Deterministic output</span>
       </div>
@@ -1565,10 +1588,10 @@ def write_report(
         <li><strong>Main-quarter structure.</strong> Trials 1–40, 41–80, 81–120, and 121–160 each contain 8–12 of every condition. Within a ListVersion, 0-back and 1-back share the same main ConditionType order.</li>
         <li><strong>Letter-identity runs.</strong> Across displayed rows, center and flanker identity runs are capped at 4 and identical center/flanker-pair runs at 3. In 1-back, a run of three consecutive YES responses requires four identical centers.</li>
         <li><strong>Congruency sequences.</strong> PerceptualCongruency and BehavioralCongruency each have maximum run length 3 across scored trials, including across quarter boundaries.</li>
-        <li><strong>Response sequence.</strong> CorrectResponse independently has maximum run length 3 across scored trials. In every main list, YES and NO have equal exact run-3 counts, with 2–4 per value and fewer than 10 pooled; their exact run-2 counts differ by no more than 5. The two main ListVersions use different run-2 count pairs.</li>
+        <li><strong>Response sequence.</strong> CorrectResponse independently has maximum run length 3 across scored trials. In every main list, YES and NO have equal exact run-3 counts, with 2–4 per value and fewer than 10 pooled; their exact run-2 counts differ by no more than 5. The three main ListVersions use different run-2 count pairs.</li>
         <li><strong>First-order transitions.</strong> For every binary field, yes→yes, yes→no, no→yes, and no→no differ by at most 1: sorted counts are [4,5,5,5] in practice and [39,40,40,40] in main.</li>
         <li><strong>Letter counts.</strong> Identities are balanced as evenly as mathematically possible both within each legally variable condition/position cell and overall. In 0-back, H necessarily occupies 50% of both positions; S/C/F split the remainder. In 1-back main, every condition/position cell contains exactly 10 of each letter.</li>
-        <li><strong>Distinct versions.</strong> Versions differ at ≥50% of scored positions in ConditionType, CorrectResponse, and complete-row content; they are not cyclic rotations, reversed rotations, or repetitions of a shorter divisor-sized motif.</li>
+        <li><strong>Distinct versions.</strong> Each pair of versions differs at ≥50% of scored positions in ConditionType, CorrectResponse, and complete-row content; they are not cyclic rotations, reversed rotations, or repetitions of a shorter divisor-sized motif.</li>
       </ol>
     </section>
 
@@ -1579,7 +1602,7 @@ def write_report(
       </div>
       <div class="definition-grid">
         <article class="definition"><h3>Trial 0</h3><p>Excluded from scored condition counts, quarters, binary runs, transitions, letter quotas, and cross-version comparisons. Included in displayed center/flanker run checks and used as the previous state for 1-back trial 1.</p></article>
-        <article class="definition"><h3>Read-back validation</h3><p>Every written CSV is reopened and checked against its header, row numbering, logical task rules, derived labels, all sequence/count constraints, and version-level requirements using explicit exceptions.</p></article>
+        <article class="definition"><h3>Read-back validation</h3><p>Every CSV is read and checked against its header, row numbering, logical task rules, derived labels, all sequence/count constraints, and version-level requirements using explicit exceptions. Existing CSVs must match the deterministic output and are preserved byte for byte; only missing files are written.</p></article>
       </div>
     </section>
 """
@@ -1600,10 +1623,10 @@ def write_report(
       <div class="section-heading">
         <p class="eyebrow">Cross-version validation</p>
         <h2>Materially distinct fixed lists</h2>
-        <p>Hamming distances exclude TrialNumber and the 1-back trial 0. Main ConditionType orders are matched across tasks within each version, while versions 1 and 2 remain materially different.</p>
+        <p>Hamming distances exclude TrialNumber and the 1-back trial 0. Main ConditionType orders are matched across tasks within each version, while versions 1, 2, and 3 remain materially different in every pairwise comparison.</p>
       </div>
       <article class="panel">
-        {html_table(('Task', 'Block', 'Type distance', 'Response distance', 'Complete-row distance', 'Required', 'Status'), distance_rows)}
+        {html_table(('Task', 'Block', 'Versions', 'Type distance', 'Response distance', 'Complete-row distance', 'Required', 'Status'), distance_rows)}
       </article>
     </section>
   </main>
@@ -1639,9 +1662,11 @@ def main() -> None:
     for (
         task,
         block,
+        left_version,
+        right_version,
     ), (type_distance, response_distance, row_distance) in distances.items():
         print(
-            f"  {task} {block}: ListVersion1/2 Hamming distance "
+            f"  {task} {block}: ListVersion{left_version}/{right_version} Hamming distance "
             f"types={type_distance}, responses={response_distance}, "
             f"complete_rows={row_distance}"
         )
